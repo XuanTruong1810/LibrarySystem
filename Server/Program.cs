@@ -20,14 +20,14 @@ builder.Services.AddControllersWithViews(options =>
 {
     options.MaxModelBindingCollectionSize = int.MaxValue;
 });
-builder.Services.AddHangfire(config =>
-   {
-       config.UseSqlServerStorage(builder.Configuration.GetConnectionString("sql"));
-   });
+// builder.Services.AddHangfire(config =>
+//    {
+//        config.UseSqlServerStorage(builder.Configuration.GetConnectionString("sql"));
+//    });
 
 
 
-builder.Services.AddHangfireServer();
+// builder.Services.AddHangfireServer();
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<DBContextUser>(options =>
@@ -88,14 +88,19 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
-var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
-recurringJobManager.AddOrUpdate<LoansService>("YourRecurringJobId",
-       service => service.CheckAndApplyPenaltyForOverdueLoans(),
-      "* * * * * *");
+// var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+// recurringJobManager.AddOrUpdate<LoansService>("YourRecurringJobId",
+//        service => service.CheckAndApplyPenaltyForOverdueLoans(),
+//       "* * * * * *");
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<DBContextUser>();
+        context.Database.EnsureCreated();
+    }
 }
 
 app.UseStaticFiles();
